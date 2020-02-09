@@ -6,7 +6,6 @@ print("ça marche connexion réussie")
 
 cursor=conn.cursor()
 
-
 listeBingo=[]
 liquidation=int(0)
 NbreDeJoursMacro=0
@@ -25,7 +24,6 @@ def funcLevier(levier):
         return 0.999
     else:
         print("Vous avez choisi un mauvais levier")
-
 
 def jeff(NbreDeJoursMacro):
     a=float(1.00)
