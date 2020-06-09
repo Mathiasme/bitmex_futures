@@ -7,10 +7,10 @@ print("You are connected to the database")
 
 cursor = conn.cursor()
 
-listeBingo = []
-liquidation = int(0)
-NbreDeJoursMacro = 0
-dateDepartFixe = "2012-11-28"
+listeBingo = [] #Final list of increments
+NbreDeJoursMacro = 0 
+fixedStartingDate = "2012-11-28" #the date you want to start the contract from
+levier = int(input("Pick a leverage of 3, 5, 10, 20 or 100 : ")) #The user will pick the leverage of the contact through this input
 
 def funcLevier(levier):
     switch(levier){
@@ -26,14 +26,17 @@ def funcLevier(levier):
             return 0.999
         default:
          print("You picked a leverage that is not allowed")
+    }
 
-def mainFunc(NbreDeJoursMacro):
+liquidation = funcLevier(levier)
+        
+def microFunc(NbreDeJoursMacro, liquidation):
     a = float(1.00)
     NbreDeJoursMicro = int(0)
     #print(liquidation)
-    while (a > liquidation) and (NbreDeJoursMicro < 180):
-        sommeJours = int(NbreDeJoursMacro+NbreDeJoursMicro)
-        cursor.execute("SELECT percentage FROM public.bitmexx WHERE datee - integer '%s' = %s;",(sommeJours, dateDepartFixe))
+    while (a > liquidation) and (NbreDeJoursMicro < 180): #a is the variation and NbreDeJoursMicro is the duration of the contract in days from the fixedStartingDate
+        daysSum = int(NbreDeJoursMacro + NbreDeJoursMicro)
+        cursor.execute("SELECT percentage FROM public.bitmexx WHERE datee - integer '%s' = %s;",(daysSum, fixedStartingDate))
         records = cursor.fetchall()
         records = records[0]
         records = str(records)
@@ -44,17 +47,13 @@ def mainFunc(NbreDeJoursMacro):
         a = (1+(records/100))*a
         #print("the future contract held ",NbreDeJoursMicro," jours et a=",a)
         x = NbreDeJoursMicro
-        y = a
         NbreDeJoursMicro = NbreDeJoursMicro+1
-    if x == 179:
-        return True
-
-levier = int(input("Pick a leverage of 3, 5, 10, 20 or 100 : "))
-liquidation = funcLevier(levier)
-
-while NbreDeJoursMacro<400:
-    if jeff(NbreDeJoursMacro):
+        if x == 179: #179 is the number of days from the fixedStartingDate necessary to consider the contract as valid
+          return True
+        
+while NbreDeJoursMacro < 400: #400 allows a period of days to test the contract equivalent to fixedStartingDate + 400 in this case
+    if microFunc(NbreDeJoursMacro, liquidation):
         listeBingo.append(NbreDeJoursMacro)
     NbreDeJoursMacro = NbreDeJoursMacro+1
-print("Here is the list of the increments of the valid dates for your position from the ", dateDepartFixe,"with your selected leverage : ",listeBingo)
+print("Here is the list of the increments of the valid dates for your position from the ", fixedStartingDate,"with your selected leverage : ",listeBingo)
 
